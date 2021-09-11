@@ -12,13 +12,13 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Artist)
 class ArtistAdmin(admin.ModelAdmin):
-    list_display = ('artist_image', 'name', 'followers')
+    list_display = ('artist_image', 'name', 'followers', 'total_music')
     search_fields = ('name', )
 
 
 @admin.register(Music)
 class MusicAdmin(admin.ModelAdmin):
-    list_display = ('music_cover', 'name', 'album', 'artist', 'category', 'release_year')
+    list_display = ('music_cover', 'name', 'album', 'artist', 'duration', 'category', 'release_year')
     search_fields = ('name', 'artist')
     list_filter = ('category', 'artist', 'release_year')
 

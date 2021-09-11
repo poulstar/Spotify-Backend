@@ -14,9 +14,9 @@ class Account(models.Model):
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     image = models.ImageField(upload_to="accounts/images", default="accounts/images/default.png")
-    gender = models.CharField(max_length=6, choices=GENDER)
+    gender = models.CharField(max_length=6, choices=GENDER, default="male")
     birthday = models.DateField(default=timezone.now)
-    following = models.ManyToManyField(Artist)
+    following = models.ManyToManyField(Artist, blank=True)
 
     def __str__(self):
         return self.user.username

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -21,8 +22,10 @@ class Category(models.Model):
 
 
 class Artist(models.Model):
-    image = models.ImageField(upload_to="artists/covers", default="artists/cover/default.png")
+    background_image = models.ImageField(upload_to="artists/backgrounds", default="artists/backgrounds/default.png")
+    image = models.ImageField(upload_to="artists/covers", default="artists/covers/default.png")
     name = models.CharField(max_length=255)
+    about = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -33,6 +36,17 @@ class Artist(models.Model):
     def artist_image(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)
 
+    def total_music(self):
+        count = 0
+        for i in self.music_set.all():
+            count += 1
+        return count
+
+
+def validate_file_extension(value):
+    if not value.name.endswith('.mp3'):
+        raise ValidationError("Choose a standard extension, please")
+
 
 class Music(models.Model):
     cover = models.ImageField(upload_to="musics/covers", default="musics/covers/default.png")
@@ -40,7 +54,7 @@ class Music(models.Model):
     album = models.ForeignKey("Album", on_delete=models.CASCADE, related_name="musics", null=True, blank=True)
     artist = models.ForeignKey("Artist", on_delete=models.CASCADE)
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
-    file = models.FileField(upload_to='musics/files')
+    file = models.FileField(upload_to='musics/files', validators=[validate_file_extension])
     release_year = models.DateField(default=timezone.now)
 
     def __str__(self):

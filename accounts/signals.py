@@ -7,14 +7,10 @@ from .models import Account
 
 @receiver(post_save, sender=User)
 def create_user_account(sender, instance, **kwargs):
-    Account.objects.create(user=instance)
-
-    # try:
-    #     instance.profile.save()
-    #     instance.cart.save()
-    # except ObjectDoesNotExist:
-    #     Profile.objects.create(user=instance)
-    #     Cart.objects.create(user=instance)
+    try:
+        instance.account.save()
+    except ObjectDoesNotExist:
+        Account.objects.create(user=instance)
 
 
 @receiver(pre_delete, sender=User)
