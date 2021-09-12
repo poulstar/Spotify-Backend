@@ -21,5 +21,14 @@ class Account(models.Model):
     def __str__(self):
         return self.user.username
 
+    def user_playlist(self):
+        return self.user.playlist.all()
+
+    def user_favourite(self):
+        return self.user.favourite.all()
+
+    def user_recent_musics(self):
+        return self.user.recent_musics.all()
+
     def account_image(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)

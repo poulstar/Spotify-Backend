@@ -18,7 +18,7 @@ class ArtistAdmin(admin.ModelAdmin):
 
 @admin.register(Music)
 class MusicAdmin(admin.ModelAdmin):
-    list_display = ('music_cover', 'name', 'album', 'artist', 'duration', 'category', 'release_year')
+    list_display = ('music_cover', 'name', 'album', 'artist', 'duration', 'likes', 'category', 'release_year')
     search_fields = ('name', 'artist')
     list_filter = ('category', 'artist', 'release_year')
 
@@ -39,7 +39,7 @@ class PlaylistAdmin(admin.ModelAdmin):
 
 @admin.register(Favourite)
 class FavouriteAdmin(admin.ModelAdmin):
-    list_display = ('user', 'is_fav')
+    list_display = ('favourite_image', 'user', 'music', 'is_fav')
     search_fields = ('user', )
     list_filter = ('user', )
 

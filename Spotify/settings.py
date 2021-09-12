@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     # Social Authentication
     'allauth.socialaccount',
     'allauth.socialaccount.providers.facebook',
-    'allauth.socialaccount.providers.twitter',
+    'allauth.socialaccount.providers.google',
 ]
 
 SITE_ID = 1
@@ -67,6 +67,30 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+REST_USE_JWT = True
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=10),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,  # IMPORTANT
+    'BLACKLIST_AFTER_ROTATION': True,  # IMPORTANT
+    'UPDATE_LAST_LOGIN': True,
+}
+
+# Rest Settings
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": (
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        # "rest_framework.authentication.BasicAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ),
+}
 
 ROOT_URLCONF = 'Spotify.urls'
 

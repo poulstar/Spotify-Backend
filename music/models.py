@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 from mutagen.mp3 import MP3
 
 
-# Create your models here.
+# ------------------------------------ Category Model
 class Category(models.Model):
     title = models.CharField(max_length=255)
     cover = models.ImageField(upload_to="categories/covers")
@@ -21,6 +21,7 @@ class Category(models.Model):
         verbose_name_plural = "Categories"
 
 
+# ------------------------------------ Artist Model
 class Artist(models.Model):
     background_image = models.ImageField(upload_to="artists/backgrounds", default="artists/backgrounds/default.png")
     image = models.ImageField(upload_to="artists/covers", default="artists/covers/default.png")
@@ -37,10 +38,7 @@ class Artist(models.Model):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)
 
     def total_music(self):
-        count = 0
-        for i in self.music_set.all():
-            count += 1
-        return count
+        return self.music_set.all().count()
 
 
 def validate_file_extension(value):
@@ -48,6 +46,7 @@ def validate_file_extension(value):
         raise ValidationError("Choose a standard extension, please")
 
 
+# ------------------------------------ Music Model
 class Music(models.Model):
     cover = models.ImageField(upload_to="musics/covers", default="musics/covers/default.png")
     name = models.CharField(max_length=255)
@@ -60,7 +59,7 @@ class Music(models.Model):
     def __str__(self):
         if self.album:
             return '%s-%s' % (self.name, self.album.name)
-        return self.name
+        return '%s-%s' % (self.name, 'single')
 
     def duration(self):
         song = MP3(self.file)
@@ -71,6 +70,9 @@ class Music(models.Model):
         s = length
         return '%s:%s' % (int(m), '0{}'.format(int(s)) if length < 10 else int(s))
 
+    def likes(self):
+        return self.is_fav.all().count()
+
     def music_cover(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.cover.url)
 
@@ -78,6 +80,7 @@ class Music(models.Model):
         ordering = ["-release_year"]
 
 
+# ------------------------------------ Album Model
 class Album(models.Model):
     cover = models.ImageField(upload_to="albums/covers", default="albums/covers/default.png")
     name = models.CharField(max_length=255)
@@ -86,20 +89,18 @@ class Album(models.Model):
     release_year = models.DateField(default=timezone.now)
 
     def __str__(self):
-        return '%s-%s' % (self.name, self.artist.name)
+        return self.name
 
     def total_music(self):
-        count = 0
-        for i in self.musics.all():
-            count += 1
-        return count
+        return self.musics.all().count()
 
     def album_cover(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.cover.url)
 
 
+# ------------------------------------ Playlist Model
 class Playlist(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='playlist')
     cover = models.ImageField(upload_to="playlists/covers",  default="playlists/covers/default.png")
     name = models.CharField(max_length=255)
     musics = models.ManyToManyField("Music")
@@ -108,25 +109,27 @@ class Playlist(models.Model):
         return self.name
 
     def total_music(self):
-        count = 0
-        for i in self.musics.all():
-            count += 1
-        return count
+        return self.musics.all().count()
 
     def playlist_cover(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.cover.url)
 
 
+# ------------------------------------ Favourite Model
 class Favourite(models.Model):
-    # id = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    musics = models.ForeignKey("Music", on_delete=models.CASCADE)
-    is_fav = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourite')
+    image = models.ImageField(upload_to="favourite/images", default="favourite/images/default.png")
+    music = models.ForeignKey("Music", on_delete=models.CASCADE, related_name='is_fav')
+    is_fav = models.BooleanField(default=True)
 
     def __str__(self):
-        return '%s-%s' % (self.user.username, self.musics.name)
+        return '%s-%s' % (self.user.username, self.music.name)
+
+    def favourite_image(self):
+        return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)
 
 
+# ------------------------------------ Recent Model
 class Recent(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recent_musics')
     music = models.ForeignKey("Music", on_delete=models.CASCADE)
