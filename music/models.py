@@ -38,7 +38,7 @@ class Artist(models.Model):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)
 
     def total_music(self):
-        return self.music_set.all().count()
+        return self.music.all().count()
 
 
 def validate_file_extension(value):
@@ -51,7 +51,7 @@ class Music(models.Model):
     cover = models.ImageField(upload_to="musics/covers", default="musics/covers/default.png")
     name = models.CharField(max_length=255)
     album = models.ForeignKey("Album", on_delete=models.CASCADE, related_name="musics", null=True, blank=True)
-    artist = models.ForeignKey("Artist", on_delete=models.CASCADE)
+    artist = models.ManyToManyField("Artist", related_name="music")
     category = models.ForeignKey("Category", on_delete=models.CASCADE)
     file = models.FileField(upload_to='musics/files', validators=[validate_file_extension])
     release_year = models.DateField(default=timezone.now)
@@ -72,6 +72,15 @@ class Music(models.Model):
 
     def likes(self):
         return self.is_fav.all().count()
+
+    def music_artist(self):
+        singer = ""
+        for artist in self.artist.all():
+            if artist == self.artist.all().reverse()[0]:
+                singer += artist.name
+            else:
+                singer += ", " + artist.name
+        return singer
 
     def music_cover(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.cover.url)
@@ -101,7 +110,7 @@ class Album(models.Model):
 # ------------------------------------ Playlist Model
 class Playlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='playlist')
-    cover = models.ImageField(upload_to="playlists/covers",  default="playlists/covers/default.png")
+    cover = models.ImageField(upload_to="playlists/covers", default="playlists/covers/default.png")
     name = models.CharField(max_length=255)
     musics = models.ManyToManyField("Music")
 
@@ -118,12 +127,13 @@ class Playlist(models.Model):
 # ------------------------------------ Favourite Model
 class Favourite(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourite')
-    image = models.ImageField(upload_to="favourite/images", default="favourite/images/default.png")
-    music = models.ForeignKey("Music", on_delete=models.CASCADE, related_name='is_fav')
-    is_fav = models.BooleanField(default=True)
+    image = models.ImageField(default="favourite/images/default.png")
+    musics = models.ManyToManyField("Music", related_name="is_fav")
+
+    # is_fav = models.BooleanField(default=True)
 
     def __str__(self):
-        return '%s-%s' % (self.user.username, self.music.name)
+        return '%s-%s' % (self.user.username, "favourite")
 
     def favourite_image(self):
         return mark_safe('<img src="%s" width="60" height="60" />' % self.image.url)
